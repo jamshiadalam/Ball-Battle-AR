@@ -4,8 +4,14 @@ namespace BallBattleAR
 {
     public class Defender : MonoBehaviour
     {
-        public float detectionRange = 5f;
-        public float chaseSpeed = 4f;
+        private float normalSpeed;
+        private float returnSpeed;
+        private float detectionRange;
+        private float spawnTime;
+        private float inactivateTime;
+        private int energyCost;
+
+        private Transform originalPosition;
         private Transform targetAttacker;
         private bool isActive = false;
         private Renderer defenderRenderer;
@@ -13,16 +19,40 @@ namespace BallBattleAR
 
         void Start()
         {
+            var parameters = GameManager.Instance.parameters;
+
+            normalSpeed = parameters.defenderSpeed * Time.deltaTime;
+            returnSpeed = parameters.returnSpeed * Time.deltaTime;
+            spawnTime = parameters.spawnTime;
+            inactivateTime = parameters.defenderReactivateTime;
+            energyCost = (int)parameters.defenderEnergyCost;
+            detectionRange = parameters.detectionRange * GameManager.Instance.GetBattlefieldWidth();
+
+            originalPosition = transform;
             defenderRenderer = GetComponent<Renderer>();
             defenderCollider = GetComponent<Collider>();
+
+            defenderRenderer.material.color = Color.gray;
+            defenderCollider.enabled = false;
+            Invoke(nameof(Activate), spawnTime);
+        }
+
+        void Activate()
+        {
+            isActive = true;
+            defenderRenderer.material.color = Color.red;
+            defenderCollider.enabled = true;
         }
 
         void Update()
         {
-            if (!isActive) FindAttackerInRange();
-            else if (targetAttacker != null)
+            if (!isActive) return;
+
+            FindAttackerInRange();
+
+            if (targetAttacker != null)
             {
-                transform.position = Vector3.MoveTowards(transform.position, targetAttacker.position, chaseSpeed * Time.deltaTime);
+                transform.position = Vector3.MoveTowards(transform.position, targetAttacker.position, normalSpeed);
             }
         }
 
@@ -34,7 +64,6 @@ namespace BallBattleAR
                 if (col.CompareTag("Attacker"))
                 {
                     targetAttacker = col.transform;
-                    isActive = true;
                     break;
                 }
             }
@@ -42,17 +71,20 @@ namespace BallBattleAR
 
         void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Attacker"))
+            if (other.CompareTag("Attacker") && other.GetComponent<Attacker>().hasBall)
             {
-                other.GetComponent<Attacker>().Deactivate(2.5f);
+                other.GetComponent<Attacker>().Deactivate();
                 isActive = false;
-                Invoke(nameof(Reactivate), 4f);
+                defenderRenderer.material.color = Color.gray;
+                defenderCollider.enabled = false;
+                Invoke(nameof(ReturnToPosition), inactivateTime);
             }
         }
 
-        void Reactivate()
+        void ReturnToPosition()
         {
             isActive = true;
+            transform.position = Vector3.MoveTowards(transform.position, originalPosition.position, returnSpeed);
         }
     }
 }

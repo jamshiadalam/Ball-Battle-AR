@@ -4,11 +4,11 @@ namespace BallBattleAR
 {
     public class PlayerController : MonoBehaviour
     {
-        public GameObject attackerPrefab, defenderPrefab;
-        public Transform gameBoard;
-        public GameObject playerField, enemyField;
+        public GameObject attackerPrefab;
+        public GameObject defenderPrefab;
+        public GameObject playerField;
+        public GameObject enemyField;
         public EnergySystem energySystem;
-        public GameParameters parameters;
 
         void Update()
         {
@@ -17,30 +17,49 @@ namespace BallBattleAR
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 if (Physics.Raycast(ray, out RaycastHit hit))
                 {
-                    bool isPlayerTurn = GameManager.Instance.IsPlayerAttacking();
-                    bool clickedOnPlayerField = hit.transform == playerField.transform;
-                    bool clickedOnEnemyField = hit.transform == enemyField.transform;
-
-                    if (isPlayerTurn && clickedOnPlayerField)
+                    if (hit.collider.gameObject == playerField || hit.collider.gameObject == enemyField)
                     {
-                        SpawnSoldier(attackerPrefab, hit.point, parameters.attackerEnergyCost, true);
-                    }
-                    else if (!isPlayerTurn && clickedOnEnemyField)
-                    {
-                        SpawnSoldier(defenderPrefab, hit.point, parameters.defenderEnergyCost, false);
+                        SpawnSoldier(hit.point, hit.collider.gameObject);
                     }
                 }
             }
         }
 
-        void SpawnSoldier(GameObject prefab, Vector3 position, float cost, bool isPlayer)
+        void SpawnSoldier(Vector3 spawnPosition, GameObject clickedField)
         {
-            if (energySystem.CanSpawn(isPlayer, cost))
+            bool isPlayerAttacking = GameManager.Instance.IsPlayerAttacking();
+            bool isPlayerSide = clickedField == playerField;
+            bool isEnemySide = clickedField == enemyField;
+
+            GameObject soldierPrefab;
+            int energyCost;
+            bool isPlayerSpawning;
+
+            if ((isPlayerAttacking && isPlayerSide) || (!isPlayerAttacking && isEnemySide))
             {
-                Instantiate(prefab, position, Quaternion.identity);
-                energySystem.SpendEnergy(isPlayer, cost);
+                soldierPrefab = attackerPrefab;
+                energyCost = GameManager.Instance.parameters.attackerEnergyCost;
+                isPlayerSpawning = isPlayerAttacking;
+            }
+            else
+            {
+                soldierPrefab = defenderPrefab;
+                energyCost = GameManager.Instance.parameters.defenderEnergyCost;
+                isPlayerSpawning = !isPlayerAttacking;
+            }
+
+            if (energySystem.CanSpawn(isPlayerSpawning, energyCost))
+            {
+                float fieldHeight = clickedField.GetComponent<Collider>().bounds.max.y;
+                spawnPosition.y = fieldHeight + 0.1f;
+
+                Instantiate(soldierPrefab, spawnPosition, Quaternion.identity);
+                energySystem.SpendEnergy(isPlayerSpawning, energyCost);
+            }
+            else
+            {
+                Debug.Log("Not enough energy to spawn!");
             }
         }
     }
-
 }

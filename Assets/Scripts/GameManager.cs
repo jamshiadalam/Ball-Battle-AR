@@ -88,7 +88,7 @@ namespace BallBattleAR
 
             float randomX = Random.Range(minX, maxX);
             float randomZ = Random.Range(minZ, maxZ);
-            float ballHeight = fieldCollider.bounds.max.y + 0.08f;
+            float ballHeight = fieldCollider.bounds.max.y + 0.15f;
 
             Vector3 spawnPosition = new Vector3(randomX, ballHeight, randomZ);
 
@@ -155,6 +155,20 @@ namespace BallBattleAR
         public bool IsPlayerAttacking()
         {
             return isPlayerAttacking;
+        }
+
+        public float GetBattlefieldWidth()
+        {
+            if (playerField == null || enemyField == null)
+            {
+                Debug.LogError("playerField or enemyField is not assigned in GameManager!");
+                return 10f;
+            }
+
+            float playerWidth = playerField.GetComponent<Collider>().bounds.size.x;
+            float enemyWidth = enemyField.GetComponent<Collider>().bounds.size.x;
+
+            return playerWidth + enemyWidth;
         }
     }
 }

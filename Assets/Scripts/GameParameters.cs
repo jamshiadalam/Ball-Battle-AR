@@ -10,8 +10,8 @@ namespace BallBattleAR
         public int energyBarLimit = 6;
         public float energyRegenRate = 0.5f;
 
-        public float attackerEnergyCost = 2;
-        public float defenderEnergyCost = 3;
+        public int attackerEnergyCost = 2;
+        public int defenderEnergyCost = 3;
 
         public float spawnTime = 0.5f;
         public float attackerReactivateTime = 2.5f;
@@ -22,7 +22,7 @@ namespace BallBattleAR
         public float carryingSpeed = 0.75f;
         public float ballSpeed = 1.5f;
         public float returnSpeed = 2.0f;
-
+        public float rotationSpeed = 50f;
         public float detectionRange = 0.35f;
     }
 }

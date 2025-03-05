@@ -36,6 +36,22 @@ namespace BallBattleAR
                 }
 
                 Destroy(other.gameObject);
+                RemoveAll();
+            }
+        }
+
+        void RemoveAll()
+        {
+            GameObject[] attackers = GameObject.FindGameObjectsWithTag("Attacker");
+            GameObject[] defenders = GameObject.FindGameObjectsWithTag("Defender");
+
+            foreach (GameObject attacker in attackers)
+            {
+                Destroy(attacker);
+            }
+            foreach (GameObject defender in defenders)
+            {
+                Destroy(defender);
             }
         }
     }

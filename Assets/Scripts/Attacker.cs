@@ -1,55 +1,89 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 
 namespace BallBattleAR
 {
     public class Attacker : MonoBehaviour
     {
         private Transform ball;
-        private Transform targetGate;
-        public float speed = 3f;
-        private bool hasBall = false;
-        private bool isActive = false;
+        private Transform goal;
+        private Transform opponentFence;
         private Renderer attackerRenderer;
         private Collider attackerCollider;
+        public bool hasBall = false;
+        private bool isActive = false;
+        private GameParameters parameters;
 
         void Start()
         {
-            if (ball == null)
-            {
-                GameObject ballObj = GameObject.FindGameObjectWithTag("Ball");
-                if (ballObj != null) ball = ballObj.transform;
-            }
+            parameters = GameManager.Instance.parameters;
 
-            if (GameManager.Instance.IsPlayerAttacking())
-            {
-                GameObject enemyGateObj = GameObject.FindGameObjectWithTag("EnemyGate");
-                if (enemyGateObj != null) targetGate = enemyGateObj.transform;
-            }
-            else
-            {
-                GameObject playerGateObj = GameObject.FindGameObjectWithTag("PlayerGate");
-                if (playerGateObj != null) targetGate = playerGateObj.transform;
-            }
+            ball = GameObject.FindGameObjectWithTag("Ball")?.transform;
+            goal = GameObject.FindGameObjectWithTag("Goal")?.transform;
+            opponentFence = FindOpponentFence();
 
             attackerRenderer = GetComponent<Renderer>();
             attackerCollider = GetComponent<Collider>();
 
-            Invoke(nameof(Activate), 0.5f);
+            attackerRenderer.material.color = Color.gray;
+            attackerCollider.enabled = false;
+            Invoke(nameof(Activate), parameters.spawnTime);
         }
 
         void Activate()
         {
             isActive = true;
+            attackerRenderer.material.color = Color.cyan;
+            attackerCollider.enabled = true;
         }
 
         void Update()
         {
-            if (!isActive || ball == null || targetGate == null) return;
+            if (!isActive) return;
 
-            Transform target = hasBall ? targetGate : ball;
-            float moveSpeed = hasBall ? 0.75f * Time.deltaTime : 1.5f * Time.deltaTime;
+            if (hasBall && goal != null)
+            {
+                MoveToTarget(goal.position, parameters.carryingSpeed);
+                RotateTowards(goal.position);
+                if (ball != null)
+                {
+                    ball.position = transform.position;
+                }
+            }
+            else if (!hasBall && ball != null)
+            {
+                MoveToTarget(ball.position, parameters.attackerSpeed);
+                RotateTowards(ball.position);
+            }
+            else if (!hasBall && opponentFence != null)
+            {
+                MoveToTarget(opponentFence.position, parameters.attackerSpeed);
+                RotateTowards(opponentFence.position);
+            }
+            
+            if (hasBall)
+            {
+                transform.GetChild(1).gameObject.SetActive(true);
+            } else
+            {
+                transform.GetChild(1).gameObject.SetActive(false);
+            }
+        }
 
-            transform.position = Vector3.MoveTowards(transform.position, target.position, moveSpeed);
+        void MoveToTarget(Vector3 target, float speed)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
+        }
+
+        void RotateTowards(Vector3 target)
+        {
+            Vector3 direction = target - transform.position;
+            direction.y = 0;
+            if (direction.magnitude > 0.1f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, parameters.rotationSpeed * Time.deltaTime);
+            }
         }
 
         public void PickUpBall()
@@ -57,20 +91,100 @@ namespace BallBattleAR
             hasBall = true;
         }
 
-        public void Deactivate(float reactivateTime)
+        public void PassBall(Transform newTarget)
         {
-            isActive = false;
-            attackerRenderer.material.color = Color.gray;
-            attackerCollider.enabled = false;
-
-            Invoke(nameof(Reactivate), reactivateTime);
+            hasBall = false;
+            if (ball != null && newTarget != null)
+            {
+                ball.position = Vector3.Lerp(ball.position, newTarget.position, parameters.ballSpeed * Time.deltaTime);
+            }
         }
 
-        void Reactivate()
+        public void Deactivate()
         {
-            isActive = true;
-            attackerRenderer.material.color = Color.white;
-            attackerCollider.enabled = true;
+            isActive = false;
+            hasBall = false;
+            attackerRenderer.material.color = Color.gray;
+            attackerCollider.enabled = false;
+            Invoke(nameof(Activate), parameters.attackerReactivateTime);
+        }
+
+        void OnTriggerEnter(Collider other)
+        {
+            if (other.CompareTag("Ball") && !hasBall)
+            {
+                hasBall = true;
+                Debug.Log("Attacker picked up the Ball!");
+                
+            }
+
+            if (other.CompareTag("Goal") && hasBall)
+            {
+                GameManager.Instance.EndMatch(true);
+                Destroy(gameObject);
+            }
+
+            if (other.CompareTag("Fence") && opponentFence != null && other.transform == opponentFence)
+            {
+                Debug.Log("Attacker reached the opponent's Fence and was destroyed.");
+                Destroy(gameObject);
+            }
+
+            if (other.CompareTag("Defender") && hasBall)
+            {
+                hasBall = false;
+                PassBall(FindNearestAttacker());
+                Deactivate();
+            }
+        }
+
+        Transform FindNearestAttacker()
+        {
+            Attacker[] attackers = FindObjectsOfType<Attacker>();
+            float minDistance = Mathf.Infinity;
+            Transform nearest = null;
+
+            foreach (var attacker in attackers)
+            {
+                if (attacker != this && attacker.isActive)
+                {
+                    float distance = Vector3.Distance(transform.position, attacker.transform.position);
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                        nearest = attacker.transform;
+                    }
+                }
+            }
+
+            return nearest;
+        }
+
+        Transform FindOpponentFence()
+        {
+            GameObject[] fences = GameObject.FindGameObjectsWithTag("Fence");
+            GameObject playerField = GameManager.Instance.playerField;
+            GameObject enemyField = GameManager.Instance.enemyField;
+
+            bool isPlayerAttacking = GameManager.Instance.IsPlayerAttacking();
+
+            foreach (GameObject fence in fences)
+            {
+                float distanceToPlayerField = Vector3.Distance(fence.transform.position, playerField.transform.position);
+                float distanceToEnemyField = Vector3.Distance(fence.transform.position, enemyField.transform.position);
+
+                if (isPlayerAttacking && distanceToEnemyField < distanceToPlayerField)
+                {
+                    return fence.transform;
+                }
+                else if (!isPlayerAttacking && distanceToPlayerField < distanceToEnemyField)
+                {
+                    return fence.transform;
+                }
+            }
+
+            Debug.LogError("Could not find the correct opponent Fence!");
+            return null;
         }
     }
 }
