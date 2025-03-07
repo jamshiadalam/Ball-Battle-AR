@@ -19,11 +19,14 @@ namespace BallBattleAR
         public GameObject playerField, enemyField;
         public GameObject ballPrefab;
         private GameObject ballInstance;
+        private EnergySystem energySystem;
+        private bool matchEnded = false;
 
         void Awake() { Instance = this; }
 
         void Start()
         {
+            energySystem = FindObjectOfType<EnergySystem>();
             StartMatch();
         }
 
@@ -48,7 +51,10 @@ namespace BallBattleAR
                 return;
             }
 
+            matchEnded = false;
             timer = parameters.matchTimeLimit;
+
+            isPlayerAttacking = (currentMatch % 2 != 0);
 
             if (isPlayerAttacking)
             {
@@ -63,8 +69,7 @@ namespace BallBattleAR
                 SpawnBall(enemyField);
             }
 
-            matchText.text = "Match " + currentMatch;
-            currentMatch++;
+            matchText.text = $"Match {currentMatch}";
         }
 
         void SpawnBall(GameObject field)
@@ -74,7 +79,7 @@ namespace BallBattleAR
             Collider fieldCollider = field.GetComponent<Collider>();
             if (fieldCollider == null)
             {
-                Debug.LogError("Field collider is missing on " + field.name);
+                Debug.LogError($"Field collider is missing on {field.name}");
                 return;
             }
 
@@ -85,22 +90,22 @@ namespace BallBattleAR
             float maxX = fieldCenter.x + (fieldSize.x / 2) - 1f;
             float minZ = fieldCenter.z - (fieldSize.z / 2) + 1f;
             float maxZ = fieldCenter.z + (fieldSize.z / 2) - 1f;
-
-            float randomX = Random.Range(minX, maxX);
-            float randomZ = Random.Range(minZ, maxZ);
             float ballHeight = fieldCollider.bounds.max.y + 0.15f;
 
-            Vector3 spawnPosition = new Vector3(randomX, ballHeight, randomZ);
+            Vector3 spawnPosition = new Vector3(
+                Random.Range(minX, maxX),
+                ballHeight,
+                Random.Range(minZ, maxZ)
+            );
 
             ballInstance = Instantiate(ballPrefab, spawnPosition, Quaternion.identity);
             ballInstance.tag = "Ball";
-
-            Debug.Log($"Ball Spawned at: {spawnPosition}");
         }
 
         public void EndMatch(bool attackerWon)
         {
-            Debug.Log($"EndMatch Called | Attacker Won: {attackerWon} | Player Attacking: {isPlayerAttacking}");
+            if (matchEnded) return;
+            matchEnded = true;
 
             if (attackerWon)
             {
@@ -126,15 +131,13 @@ namespace BallBattleAR
                 enemyGameStateText.text = "MATCH DRAW!";
             }
 
-            isPlayerAttacking = !isPlayerAttacking;
-
+            currentMatch++;
+            RemoveAll();
             Invoke(nameof(StartMatch), 2f);
         }
 
         void GameOver()
         {
-            Debug.Log($"Game Over | Player Wins: {playerWins} | Enemy Wins: {enemyWins}");
-
             if (playerWins > enemyWins)
             {
                 playerGameStateText.text = "PLAYER WINS THE GAME!";
@@ -157,6 +160,21 @@ namespace BallBattleAR
             return isPlayerAttacking;
         }
 
+        void RemoveAll()
+        {
+            GameObject[] attackers = GameObject.FindGameObjectsWithTag("Attacker");
+            GameObject[] defenders = GameObject.FindGameObjectsWithTag("Defender");
+
+            foreach (GameObject attacker in attackers)
+            {
+                Destroy(attacker);
+            }
+            foreach (GameObject defender in defenders)
+            {
+                Destroy(defender);
+            }
+        }
+
         public float GetBattlefieldWidth()
         {
             if (playerField == null || enemyField == null)
@@ -170,5 +188,6 @@ namespace BallBattleAR
 
             return playerWidth + enemyWidth;
         }
+
     }
 }

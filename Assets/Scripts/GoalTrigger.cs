@@ -12,46 +12,18 @@ namespace BallBattleAR
             {
                 bool playerIsAttacking = GameManager.Instance.IsPlayerAttacking();
 
-                Debug.Log($"[GoalTrigger] Ball entered: {gameObject.name} | isEnemyGate: {isEnemyGate} | Player Attacking: {playerIsAttacking}");
-
-                if (playerIsAttacking && isEnemyGate)
+                if ((playerIsAttacking && isEnemyGate) || (!playerIsAttacking && !isEnemyGate))
                 {
-                    Debug.Log("Goal! Player Wins!");
+                    Debug.Log("Goal! Attacker Wins!");
                     GameManager.Instance.EndMatch(true);
                 }
-                else if (!playerIsAttacking && !isEnemyGate)
+                else
                 {
-                    Debug.Log("Goal! Enemy Wins!");
-                    GameManager.Instance.EndMatch(true);
-                }
-                else if (playerIsAttacking && !isEnemyGate)
-                {
-                    Debug.Log("Goal! Enemy Wins!");
-                    GameManager.Instance.EndMatch(true);
-                }
-                else if (!playerIsAttacking && isEnemyGate)
-                {
-                    Debug.Log("Goal! Player Wins!");
-                    GameManager.Instance.EndMatch(true);
+                    Debug.Log("Goal! Defender Wins!");
+                    GameManager.Instance.EndMatch(false);
                 }
 
                 Destroy(other.gameObject);
-                RemoveAll();
-            }
-        }
-
-        void RemoveAll()
-        {
-            GameObject[] attackers = GameObject.FindGameObjectsWithTag("Attacker");
-            GameObject[] defenders = GameObject.FindGameObjectsWithTag("Defender");
-
-            foreach (GameObject attacker in attackers)
-            {
-                Destroy(attacker);
-            }
-            foreach (GameObject defender in defenders)
-            {
-                Destroy(defender);
             }
         }
     }
