@@ -36,11 +36,12 @@ namespace BallBattleAR
             if (timer > 0)
             {
                 timer -= Time.deltaTime;
-                timerText.text = "Time Left "+Mathf.Ceil(timer).ToString();
+                timerText.text = "Time Left " + Mathf.Ceil(timer).ToString();
             }
-            else
+            else if (!matchEnded)
             {
-                EndMatch(false);
+                Debug.Log("Timeout! Match is a Draw!");
+                EndMatch("Draw");
             }
         }
 
@@ -103,38 +104,63 @@ namespace BallBattleAR
             ballInstance.tag = "Ball";
         }
 
-        public void EndMatch(bool attackerWon)
+        public void EndMatch(string resultType)
         {
             if (matchEnded) return;
             matchEnded = true;
 
-            if (attackerWon)
+            Debug.Log($"EndMatch Called | Result: {resultType} | Player Attacking: {isPlayerAttacking}");
+
+            switch (resultType)
             {
-                if (isPlayerAttacking)
-                {
-                    Debug.Log("Player Wins this match!");
-                    playerWins++;
-                    playerGameStateText.text = "PLAYER - WIN";
-                    enemyGameStateText.text = "ENEMY - LOSE";
-                }
-                else
-                {
-                    Debug.Log("Enemy Wins this match!");
-                    enemyWins++;
-                    playerGameStateText.text = "PLAYER - LOSE";
-                    enemyGameStateText.text = "ENEMY - WIN";
-                }
-            }
-            else
-            {
-                Debug.Log("Match Draw!");
-                playerGameStateText.text = "MATCH DRAW!";
-                enemyGameStateText.text = "MATCH DRAW!";
+                case "AttackerWin":
+                    if (isPlayerAttacking)
+                    {
+                        Debug.Log("Player Wins this match!");
+                        playerWins++;
+                        playerGameStateText.text = "PLAYER - WIN";
+                        enemyGameStateText.text = "ENEMY - LOSE";
+                    }
+                    else
+                    {
+                        Debug.Log("Enemy Wins this match!");
+                        enemyWins++;
+                        playerGameStateText.text = "PLAYER - LOSE";
+                        enemyGameStateText.text = "ENEMY - WIN";
+                    }
+                    break;
+
+                case "DefenderWin":
+                    if (isPlayerAttacking)
+                    {
+                        Debug.Log("Enemy Wins! Player Attackers Eliminated!");
+                        enemyWins++;
+                        playerGameStateText.text = "PLAYER - LOSE";
+                        enemyGameStateText.text = "ENEMY - WIN";
+                    }
+                    else
+                    {
+                        Debug.Log("Player Wins! Enemy Attackers Eliminated!");
+                        playerWins++;
+                        playerGameStateText.text = "PLAYER - WIN";
+                        enemyGameStateText.text = "ENEMY - LOSE";
+                    }
+                    break;
+
+                case "Draw":
+                    Debug.Log("Match Draw! Time Expired!");
+                    playerGameStateText.text = "MATCH DRAW!";
+                    enemyGameStateText.text = "MATCH DRAW!";
+                    break;
             }
 
             currentMatch++;
+            Debug.Log($"➡️ Moving to Match {currentMatch}");
+
             energySystem.ResetEnergy();
             RemoveAll();
+
+            Debug.Log("Waiting 2 seconds before starting next match...");
             Invoke(nameof(StartMatch), 2f);
         }
 

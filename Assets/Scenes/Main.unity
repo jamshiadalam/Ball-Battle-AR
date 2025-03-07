@@ -3736,7 +3736,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Enemy -AI (Defender)
+  m_text: Enemy
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: becd5c011ad00f649bf5d75115de3526, type: 2}
   m_sharedMaterial: {fileID: -8107312714331004128, guid: becd5c011ad00f649bf5d75115de3526,
@@ -4261,7 +4261,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Player (Attacker)
+  m_text: Player
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: becd5c011ad00f649bf5d75115de3526, type: 2}
   m_sharedMaterial: {fileID: -8107312714331004128, guid: becd5c011ad00f649bf5d75115de3526,

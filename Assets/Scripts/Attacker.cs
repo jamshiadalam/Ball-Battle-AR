@@ -11,7 +11,7 @@ namespace BallBattleAR
         private Renderer attackerRenderer;
         private Collider attackerCollider;
         public bool hasBall = false;
-        private bool isActive = false;
+        public bool isActive = false;
         private GameParameters parameters;
 
         void Start()
@@ -55,13 +55,39 @@ namespace BallBattleAR
                 MoveToTarget(ball.position, parameters.attackerSpeed);
                 RotateTowards(ball.position);
             }
-            else if (!hasBall && opponentFence != null)
+            else if (!hasBall && ball == null && opponentFence != null)
             {
                 MoveToTarget(opponentFence.position, parameters.attackerSpeed);
                 RotateTowards(opponentFence.position);
             }
 
-            transform.GetChild(1).gameObject.SetActive(hasBall);
+            UpdateBallIndicator();
+        }
+
+        void UpdateBallIndicator()
+        {
+            Attacker[] attackers = FindObjectsOfType<Attacker>();
+            bool foundBallHolder = false;
+
+            foreach (var attacker in attackers)
+            {
+                if (attacker.hasBall)
+                {
+                    if (!foundBallHolder)
+                    {
+                        attacker.transform.GetChild(1).gameObject.SetActive(true);
+                        foundBallHolder = true;
+                    }
+                    else
+                    {
+                        attacker.transform.GetChild(1).gameObject.SetActive(false);
+                    }
+                }
+                else
+                {
+                    attacker.transform.GetChild(1).gameObject.SetActive(false);
+                }
+            }
         }
 
         void MoveToTarget(Vector3 target, float speed)
@@ -83,37 +109,70 @@ namespace BallBattleAR
         public void PickUpBall()
         {
             hasBall = true;
+            transform.GetChild(1).gameObject.SetActive(true);
         }
 
         public void PassBall(Transform newTarget)
         {
             hasBall = false;
+            transform.GetChild(1).gameObject.SetActive(false);
+
             if (ball != null && newTarget != null)
             {
                 ball.position = Vector3.Lerp(ball.position, newTarget.position, parameters.ballSpeed * Time.deltaTime);
+
+                Attacker newAttacker = newTarget.GetComponent<Attacker>();
+                if (newAttacker != null)
+                {
+                    newAttacker.PickUpBall();
+                    newAttacker.transform.GetChild(1).gameObject.SetActive(true);
+                }
             }
         }
 
         public void Deactivate()
         {
+            if (!isActive) return;
+
             isActive = false;
             hasBall = false;
             attackerRenderer.material.color = Color.gray;
             attackerCollider.enabled = false;
+            transform.GetChild(1).gameObject.SetActive(false);
+            Debug.Log("Attacker is deactivated for " + parameters.attackerReactivateTime + " seconds.");
+
             Invoke(nameof(Activate), parameters.attackerReactivateTime);
         }
+
 
         void OnTriggerEnter(Collider other)
         {
             if (other.CompareTag("Ball") && !hasBall)
             {
-                hasBall = true;
-                Debug.Log("Attacker picked up the Ball!");
+                Attacker[] attackers = FindObjectsOfType<Attacker>();
+                bool ballAlreadyHeld = false;
+
+                foreach (var attacker in attackers)
+                {
+                    if (attacker.hasBall)
+                    {
+                        ballAlreadyHeld = true;
+                        break;
+                    }
+                }
+
+                if (!ballAlreadyHeld)
+                {
+                    hasBall = true;
+                    Debug.Log("Attacker picked up the Ball!");
+                }
+
+                UpdateBallIndicator();
             }
 
             if (other.CompareTag("Goal") && hasBall)
             {
-                GameManager.Instance.EndMatch(true);
+                GameManager.Instance.EndMatch("AttackerWin");
                 Destroy(gameObject);
             }
 
@@ -125,11 +184,22 @@ namespace BallBattleAR
 
             if (other.CompareTag("Defender") && hasBall)
             {
-                hasBall = false;
-                PassBall(FindNearestAttacker());
+                Transform nearestAttacker = FindNearestAttacker();
+                if (nearestAttacker != null)
+                {
+                    Debug.Log("Attacker was caught by a Defender! Passing Ball to nearest Attacker.");
+                    PassBall(nearestAttacker);
+                }
+                else
+                {
+                    Debug.Log("No nearby Attacker to pass to! Defender Wins!");
+                    GameManager.Instance.EndMatch("DefenderWin");
+                }
+
                 Deactivate();
             }
         }
+
 
         Transform FindNearestAttacker()
         {

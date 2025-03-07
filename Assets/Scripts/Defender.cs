@@ -53,38 +53,62 @@ namespace BallBattleAR
             if (targetAttacker != null)
             {
                 transform.position = Vector3.MoveTowards(transform.position, targetAttacker.position, normalSpeed);
+                Debug.Log($"Defender chasing Attacker: {targetAttacker.name}");
             }
         }
 
         void FindAttackerInRange()
         {
-            Collider[] attackers = Physics.OverlapSphere(transform.position, detectionRange);
-            foreach (Collider col in attackers)
+            Collider[] colliders = Physics.OverlapSphere(transform.position, detectionRange);
+            foreach (Collider col in colliders)
             {
-                if (col.CompareTag("Attacker"))
+                Attacker attacker = col.GetComponent<Attacker>();
+                if (attacker != null && attacker.hasBall && attacker.isActive)
                 {
-                    targetAttacker = col.transform;
-                    break;
+                    targetAttacker = attacker.transform;
+                    Debug.Log($"Defender locked onto Attacker: {targetAttacker.name}");
+                    return;
                 }
             }
         }
 
         void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Attacker") && other.GetComponent<Attacker>().hasBall)
+            if (other.CompareTag("Attacker"))
             {
-                other.GetComponent<Attacker>().Deactivate();
-                isActive = false;
-                defenderRenderer.material.color = Color.gray;
-                defenderCollider.enabled = false;
-                Invoke(nameof(ReturnToPosition), inactivateTime);
+                Attacker attacker = other.GetComponent<Attacker>();
+                if (attacker != null && attacker.hasBall)
+                {
+                    Debug.Log($"Defender caught Attacker: {attacker.name}");
+                    attacker.Deactivate();
+
+                    isActive = false;
+                    defenderRenderer.material.color = Color.gray;
+                    defenderCollider.enabled = false;
+                    targetAttacker = null;
+
+                    Invoke(nameof(ReturnToPosition), inactivateTime);
+                }
             }
         }
 
         void ReturnToPosition()
         {
+            StartCoroutine(MoveBackToOriginal());
+        }
+
+        System.Collections.IEnumerator MoveBackToOriginal()
+        {
+            while (Vector3.Distance(transform.position, originalPosition.position) > 0.1f)
+            {
+                transform.position = Vector3.MoveTowards(transform.position, originalPosition.position, returnSpeed);
+                yield return null;
+            }
+
             isActive = true;
-            transform.position = Vector3.MoveTowards(transform.position, originalPosition.position, returnSpeed);
+            defenderRenderer.material.color = Color.red;
+            defenderCollider.enabled = true;
+            Debug.Log("Defender is back in position and reactivated.");
         }
     }
 }

@@ -12,15 +12,17 @@ namespace BallBattleAR
             {
                 bool playerIsAttacking = GameManager.Instance.IsPlayerAttacking();
 
+                Debug.Log($"Ball entered: {gameObject.name} | isEnemyGate: {isEnemyGate} | Player Attacking: {playerIsAttacking}");
+
                 if ((playerIsAttacking && isEnemyGate) || (!playerIsAttacking && !isEnemyGate))
                 {
                     Debug.Log("Goal! Attacker Wins!");
-                    GameManager.Instance.EndMatch(true);
+                    GameManager.Instance.EndMatch("AttackerWin");
                 }
                 else
                 {
-                    Debug.Log("Goal! Defender Wins!");
-                    GameManager.Instance.EndMatch(false);
+                    Debug.Log("Goal! Opponent Wins!");
+                    GameManager.Instance.EndMatch("DefenderWin");
                 }
 
                 Destroy(other.gameObject);
