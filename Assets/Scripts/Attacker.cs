@@ -19,7 +19,7 @@ namespace BallBattleAR
             parameters = GameManager.Instance.parameters;
 
             ball = GameObject.FindGameObjectWithTag("Ball")?.transform;
-            goal = GameObject.FindGameObjectWithTag("Goal")?.transform;
+            goal = FindOpponentGoal();
             opponentFence = FindOpponentFence();
 
             attackerRenderer = GetComponent<Renderer>();
@@ -60,14 +60,8 @@ namespace BallBattleAR
                 MoveToTarget(opponentFence.position, parameters.attackerSpeed);
                 RotateTowards(opponentFence.position);
             }
-            
-            if (hasBall)
-            {
-                transform.GetChild(1).gameObject.SetActive(true);
-            } else
-            {
-                transform.GetChild(1).gameObject.SetActive(false);
-            }
+
+            transform.GetChild(1).gameObject.SetActive(hasBall);
         }
 
         void MoveToTarget(Vector3 target, float speed)
@@ -115,7 +109,6 @@ namespace BallBattleAR
             {
                 hasBall = true;
                 Debug.Log("Attacker picked up the Ball!");
-                
             }
 
             if (other.CompareTag("Goal") && hasBall)
@@ -158,6 +151,33 @@ namespace BallBattleAR
             }
 
             return nearest;
+        }
+
+        Transform FindOpponentGoal()
+        {
+            GameObject[] goals = GameObject.FindGameObjectsWithTag("Goal");
+            GameObject playerField = GameManager.Instance.playerField;
+            GameObject enemyField = GameManager.Instance.enemyField;
+
+            bool isPlayerAttacking = GameManager.Instance.IsPlayerAttacking();
+
+            foreach (GameObject goal in goals)
+            {
+                float distanceToPlayerField = Vector3.Distance(goal.transform.position, playerField.transform.position);
+                float distanceToEnemyField = Vector3.Distance(goal.transform.position, enemyField.transform.position);
+
+                if (isPlayerAttacking && distanceToEnemyField < distanceToPlayerField)
+                {
+                    return goal.transform;
+                }
+                else if (!isPlayerAttacking && distanceToPlayerField < distanceToEnemyField)
+                {
+                    return goal.transform;
+                }
+            }
+
+            Debug.LogError("Could not find the correct opponent Goal!");
+            return null;
         }
 
         Transform FindOpponentFence()
