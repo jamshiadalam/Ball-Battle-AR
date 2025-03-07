@@ -40,5 +40,14 @@ namespace BallBattleAR
             else if (!isPlayer && enemyEnergy >= cost)
                 enemyEnergy -= cost;
         }
+
+        public void ResetEnergy()
+        {
+            playerEnergySlider.value = 0;
+            enemyEnergySlider.value = 0;
+
+            playerEnergy = 0;
+            enemyEnergy = 0;
+        }
     }
 }

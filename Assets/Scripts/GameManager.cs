@@ -28,6 +28,7 @@ namespace BallBattleAR
         {
             energySystem = FindObjectOfType<EnergySystem>();
             StartMatch();
+            timer = parameters.matchTimeLimit;
         }
 
         void Update()
@@ -35,7 +36,7 @@ namespace BallBattleAR
             if (timer > 0)
             {
                 timer -= Time.deltaTime;
-                timerText.text = Mathf.Ceil(timer).ToString();
+                timerText.text = "Time Left "+Mathf.Ceil(timer).ToString();
             }
             else
             {
@@ -52,7 +53,7 @@ namespace BallBattleAR
             }
 
             matchEnded = false;
-            timer = parameters.matchTimeLimit;
+            
 
             isPlayerAttacking = (currentMatch % 2 != 0);
 
@@ -132,6 +133,7 @@ namespace BallBattleAR
             }
 
             currentMatch++;
+            energySystem.ResetEnergy();
             RemoveAll();
             Invoke(nameof(StartMatch), 2f);
         }
