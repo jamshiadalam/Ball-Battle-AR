@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 namespace BallBattleAR
 {
@@ -15,12 +16,14 @@ namespace BallBattleAR
         private int playerWins = 0;
         private int enemyWins = 0;
 
-        public TMP_Text timerText, matchText, playerGameStateText, enemyGameStateText;
+        public TMP_Text timerText, matchText, playerGameStateText, enemyGameStateText, gameOverText;
         public GameObject playerField, enemyField;
         public GameObject ballPrefab;
         private GameObject ballInstance;
         private EnergySystem energySystem;
         private bool matchEnded = false;
+        public GameObject GameOverScreen;
+        public GameObject PausedScreen;
 
         void Awake() { Instance = this; }
 
@@ -155,7 +158,7 @@ namespace BallBattleAR
             }
 
             currentMatch++;
-            Debug.Log($"➡️ Moving to Match {currentMatch}");
+            Debug.Log($"Moving to Match {currentMatch}");
 
             energySystem.ResetEnergy();
             RemoveAll();
@@ -170,17 +173,42 @@ namespace BallBattleAR
             {
                 playerGameStateText.text = "PLAYER WINS THE GAME!";
                 enemyGameStateText.text = "ENEMY LOSES!";
+                gameOverText.text = "PLAYER WINS THE GAME!";
             }
             else if (enemyWins > playerWins)
             {
                 playerGameStateText.text = "PLAYER LOSES!";
                 enemyGameStateText.text = "ENEMY WINS THE GAME!";
+                gameOverText.text = "ENEMY WINS THE GAME!";
             }
             else
             {
                 playerGameStateText.text = "GAME TIED! EXTRA ROUND?";
                 enemyGameStateText.text = "GAME TIED!";
+                gameOverText.text = "GAME TIED! EXTRA ROUND?";
             }
+
+            timerText.text = "";
+            GameOverScreen.SetActive(true);
+            Time.timeScale = 0;
+        }
+
+        public void RestartGame()
+        {
+            Time.timeScale = 1;
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        public void PauseGame()
+        {
+            Time.timeScale = 0;
+            PausedScreen.SetActive(true);
+        }
+
+        public void ResumeGame()
+        {
+            Time.timeScale = 1;
+            PausedScreen.SetActive(false);
         }
 
         public bool IsPlayerAttacking()
