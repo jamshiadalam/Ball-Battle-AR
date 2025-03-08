@@ -237,6 +237,11 @@ namespace BallBattleAR
             StartMatch();
         }
 
+        public void AppExit()
+        {
+            Application.Quit();
+        }
+
         void RemoveAll()
         {
             GameObject[] attackers = GameObject.FindGameObjectsWithTag("Attacker");
@@ -265,6 +270,5 @@ namespace BallBattleAR
 
             return playerWidth + enemyWidth;
         }
-
     }
 }

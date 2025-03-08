@@ -73,6 +73,7 @@ namespace BallBattleAR
                     if(!isDetected)
                     {
                         gameObject.GetComponent<Animator>().Play("Running", 0, -1);
+                        gameObject.transform.GetChild(4).gameObject.SetActive(true);
                         isDetected = true;
                     }
 

@@ -168,6 +168,7 @@ namespace BallBattleAR
                 }
 
                 UpdateBallIndicator();
+                GameObject.Find("SoldierHit").GetComponent<AudioSource>().Play();
             }
 
             if (other.CompareTag("Goal") && hasBall)
