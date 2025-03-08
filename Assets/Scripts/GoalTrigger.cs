@@ -8,6 +8,7 @@ namespace BallBattleAR
         public bool isEnemyGate;
         public ParticleSystem enemyParticle;
         public ParticleSystem playerParticle;
+        public AudioSource goalHit;
 
         void OnTriggerEnter(Collider other)
         {
@@ -38,6 +39,8 @@ namespace BallBattleAR
                     playerParticle.gameObject.SetActive(true);
                     playerParticle.Play(true);
                 }
+
+                goalHit.Play();
                 Destroy(other.gameObject);
             }
         }

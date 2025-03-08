@@ -12,6 +12,8 @@ namespace BallBattleAR
 
         void Update()
         {
+            if (!GameManager.Instance.isGameStarted) return;
+
             if (Input.GetMouseButtonDown(0))
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);

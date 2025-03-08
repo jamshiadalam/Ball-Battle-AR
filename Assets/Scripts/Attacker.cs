@@ -188,6 +188,7 @@ namespace BallBattleAR
                 if (nearestAttacker != null)
                 {
                     Debug.Log("Attacker was caught by a Defender! Passing Ball to nearest Attacker.");
+                    GameObject.Find("SoldierHit").GetComponent<AudioSource>().Play();
                     PassBall(nearestAttacker);
                 }
                 else
@@ -195,7 +196,6 @@ namespace BallBattleAR
                     Debug.Log("No nearby Attacker to pass to! Defender Wins!");
                     GameManager.Instance.EndMatch("DefenderWin");
                 }
-
                 Deactivate();
             }
         }

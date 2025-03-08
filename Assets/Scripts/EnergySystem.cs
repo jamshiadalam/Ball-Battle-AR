@@ -22,6 +22,7 @@ namespace BallBattleAR
 
         void Update()
         {
+            if (!GameManager.Instance.isGameStarted) return;
             if (!energyRegenActive) return;
 
             playerEnergy = Mathf.Min(parameters.energyBarLimit, playerEnergy + parameters.energyRegenRate * Time.deltaTime);

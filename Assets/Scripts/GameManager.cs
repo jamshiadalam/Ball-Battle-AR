@@ -26,18 +26,20 @@ namespace BallBattleAR
         public GameObject PausedScreen;
         public ParticleSystem enemyParticle;
         public ParticleSystem playerParticle;
+        public bool isGameStarted = false;
 
         void Awake() { Instance = this; }
 
         void Start()
         {
             energySystem = FindObjectOfType<EnergySystem>();
-            StartMatch();
             timer = parameters.matchTimeLimit;
         }
 
         void Update()
         {
+            if (!isGameStarted) { return; }
+
             if (timer > 0)
             {
                 timer -= Time.deltaTime;
@@ -115,6 +117,7 @@ namespace BallBattleAR
             matchEnded = true;
             StartCoroutine(FindObjectOfType<ProjektSumperk.CameraShake>().ShakeCoroutine());
             Debug.Log($"EndMatch Called | Result: {resultType} | Player Attacking: {isPlayerAttacking}");
+            GameObject.Find("GoalHit").GetComponent<AudioSource>().Play();
 
             switch (resultType)
             {
@@ -213,17 +216,25 @@ namespace BallBattleAR
         {
             Time.timeScale = 0;
             PausedScreen.SetActive(true);
+            isGameStarted = false;
         }
 
         public void ResumeGame()
         {
             Time.timeScale = 1;
             PausedScreen.SetActive(false);
+            isGameStarted = true;
         }
 
         public bool IsPlayerAttacking()
         {
             return isPlayerAttacking;
+        }
+
+        public void GameStarted()
+        {
+            isGameStarted = true;
+            StartMatch();
         }
 
         void RemoveAll()
