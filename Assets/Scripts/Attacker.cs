@@ -22,7 +22,7 @@ namespace BallBattleAR
             goal = FindOpponentGoal();
             opponentFence = FindOpponentFence();
 
-            attackerRenderer = GetComponent<Renderer>();
+            attackerRenderer = transform.GetChild(2).GetComponent<Renderer>();
             attackerCollider = GetComponent<Collider>();
 
             attackerRenderer.material.color = Color.gray;

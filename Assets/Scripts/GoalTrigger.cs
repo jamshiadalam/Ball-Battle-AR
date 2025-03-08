@@ -1,10 +1,13 @@
-﻿using UnityEngine;
+﻿using ProjektSumperk;
+using UnityEngine;
 
 namespace BallBattleAR
 {
     public class GoalTrigger : MonoBehaviour
     {
         public bool isEnemyGate;
+        public ParticleSystem enemyParticle;
+        public ParticleSystem playerParticle;
 
         void OnTriggerEnter(Collider other)
         {
@@ -25,6 +28,16 @@ namespace BallBattleAR
                     GameManager.Instance.EndMatch("DefenderWin");
                 }
 
+                if(isEnemyGate)
+                {
+                    enemyParticle.gameObject.SetActive(true);
+                    enemyParticle.Play(true);
+                } 
+                else
+                {
+                    playerParticle.gameObject.SetActive(true);
+                    playerParticle.Play(true);
+                }
                 Destroy(other.gameObject);
             }
         }

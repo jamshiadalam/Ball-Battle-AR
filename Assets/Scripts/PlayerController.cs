@@ -53,7 +53,15 @@ namespace BallBattleAR
                 float fieldHeight = clickedField.GetComponent<Collider>().bounds.max.y;
                 spawnPosition.y = fieldHeight + 0.1f;
 
-                Instantiate(soldierPrefab, spawnPosition, Quaternion.identity);
+                if(isEnemySide)
+                {
+                    Instantiate(soldierPrefab, spawnPosition, Quaternion.identity);
+                } else
+                {
+                    Instantiate(soldierPrefab, spawnPosition, Quaternion.Euler(0,-180,0));
+                }
+
+                
                 energySystem.SpendEnergy(isPlayerSpawning, energyCost);
             }
             else

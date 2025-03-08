@@ -16,6 +16,7 @@ namespace BallBattleAR
         private bool isActive = false;
         private Renderer defenderRenderer;
         private Collider defenderCollider;
+        private bool isDetected = false;
 
         void Start()
         {
@@ -29,7 +30,7 @@ namespace BallBattleAR
             detectionRange = parameters.detectionRange * GameManager.Instance.GetBattlefieldWidth();
 
             originalPosition = transform;
-            defenderRenderer = GetComponent<Renderer>();
+            defenderRenderer = transform.GetChild(2).GetComponent<Renderer>();
             defenderCollider = GetComponent<Collider>();
 
             defenderRenderer.material.color = Color.gray;
@@ -39,6 +40,7 @@ namespace BallBattleAR
 
         void Activate()
         {
+            
             isActive = true;
             defenderRenderer.material.color = Color.red;
             defenderCollider.enabled = true;
@@ -67,6 +69,13 @@ namespace BallBattleAR
                 {
                     targetAttacker = attacker.transform;
                     Debug.Log($"Defender locked onto Attacker: {targetAttacker.name}");
+
+                    if(!isDetected)
+                    {
+                        gameObject.GetComponent<Animator>().Play("Running", 0, -1);
+                        isDetected = true;
+                    }
+
                     return;
                 }
             }

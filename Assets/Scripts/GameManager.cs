@@ -24,6 +24,8 @@ namespace BallBattleAR
         private bool matchEnded = false;
         public GameObject GameOverScreen;
         public GameObject PausedScreen;
+        public ParticleSystem enemyParticle;
+        public ParticleSystem playerParticle;
 
         void Awake() { Instance = this; }
 
@@ -111,7 +113,7 @@ namespace BallBattleAR
         {
             if (matchEnded) return;
             matchEnded = true;
-
+            StartCoroutine(FindObjectOfType<ProjektSumperk.CameraShake>().ShakeCoroutine());
             Debug.Log($"EndMatch Called | Result: {resultType} | Player Attacking: {isPlayerAttacking}");
 
             switch (resultType)
@@ -123,6 +125,8 @@ namespace BallBattleAR
                         playerWins++;
                         playerGameStateText.text = "PLAYER - WIN";
                         enemyGameStateText.text = "ENEMY - LOSE";
+                        enemyParticle.gameObject.SetActive(true);
+                        enemyParticle.Play(true);
                     }
                     else
                     {
@@ -130,6 +134,8 @@ namespace BallBattleAR
                         enemyWins++;
                         playerGameStateText.text = "PLAYER - LOSE";
                         enemyGameStateText.text = "ENEMY - WIN";
+                        playerParticle.gameObject.SetActive(true);
+                        playerParticle.Play(true);
                     }
                     break;
 
@@ -140,6 +146,8 @@ namespace BallBattleAR
                         enemyWins++;
                         playerGameStateText.text = "PLAYER - LOSE";
                         enemyGameStateText.text = "ENEMY - WIN";
+                        playerParticle.gameObject.SetActive(true);
+                        playerParticle.Play(true);
                     }
                     else
                     {
@@ -147,6 +155,8 @@ namespace BallBattleAR
                         playerWins++;
                         playerGameStateText.text = "PLAYER - WIN";
                         enemyGameStateText.text = "ENEMY - LOSE";
+                        enemyParticle.gameObject.SetActive(true);
+                        enemyParticle.Play(true);
                     }
                     break;
 
