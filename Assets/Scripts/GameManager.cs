@@ -27,6 +27,8 @@ namespace BallBattleAR
         public ParticleSystem enemyParticle;
         public ParticleSystem playerParticle;
         public bool isGameStarted = false;
+        public GameObject MazeGame;
+        public GameObject Instruction;
 
         void Awake() { Instance = this; }
 
@@ -187,23 +189,29 @@ namespace BallBattleAR
                 playerGameStateText.text = "PLAYER WINS THE GAME!";
                 enemyGameStateText.text = "ENEMY LOSES!";
                 gameOverText.text = "PLAYER WINS THE GAME!";
+
+                timerText.text = "";
+                GameOverScreen.SetActive(true);
+                Time.timeScale = 0;
             }
             else if (enemyWins > playerWins)
             {
                 playerGameStateText.text = "PLAYER LOSES!";
                 enemyGameStateText.text = "ENEMY WINS THE GAME!";
                 gameOverText.text = "ENEMY WINS THE GAME!";
+
+                timerText.text = "";
+                GameOverScreen.SetActive(true);
+                Time.timeScale = 0;
             }
             else
             {
-                playerGameStateText.text = "GAME TIED! EXTRA ROUND?";
-                enemyGameStateText.text = "GAME TIED!";
-                gameOverText.text = "GAME TIED! EXTRA ROUND?";
-            }
+                playerGameStateText.text = "GAME TIED! Play Maze Runner";
+                enemyGameStateText.text = "GAME TIED! Play Maze Runner";
+                gameOverText.text = "GAME TIED! Play Maze Runner";
 
-            timerText.text = "";
-            GameOverScreen.SetActive(true);
-            Time.timeScale = 0;
+                StartMazeGame();
+            }
         }
 
         public void RestartGame()
@@ -269,6 +277,20 @@ namespace BallBattleAR
             float enemyWidth = enemyField.GetComponent<Collider>().bounds.size.x;
 
             return playerWidth + enemyWidth;
+        }
+
+        public void MazeGameOver(string txt)
+        {
+            GameOverScreen.SetActive(true);
+            gameOverText.text = txt;
+        }
+
+        public void StartMazeGame()
+        {
+            Instruction.SetActive(true);
+            isGameStarted=false;
+            MazeGame.SetActive(true);
+            ballInstance.SetActive(false);
         }
     }
 }
