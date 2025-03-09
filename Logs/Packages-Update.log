@@ -1,5 +1,5 @@
 
-=== Tue Mar  4 13:54:11 2025
+=== Sun Mar  9 13:16:26 2025
 
 Packages were changed.
 Update Mode: mergeDefaultDependencies
@@ -44,4 +44,4 @@ The following packages were added:
   com.unity.timeline@1.2.18
   com.unity.ugui@1.0.0
 The following packages were updated:
-  com.unity.render-pipelines.universal from version 7.5.2 to 7.5.3
+  com.unity.xr.windowsmr from version 2.5.2 to 2.6.0
