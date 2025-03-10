@@ -8,7 +8,7 @@ namespace BallBattleAR
     {
         public static GameManager Instance;
         public GameParameters parameters;
-
+        public Transform rootContainer;
         private int currentMatch = 1;
         private float timer;
         private bool isPlayerAttacking = true;
@@ -94,24 +94,27 @@ namespace BallBattleAR
                 return;
             }
 
-            Vector3 fieldCenter = fieldCollider.bounds.center;
-            Vector3 fieldSize = fieldCollider.bounds.size;
+            Bounds fieldBounds = fieldCollider.bounds;
 
-            float minX = fieldCenter.x - (fieldSize.x / 2) + 1f;
-            float maxX = fieldCenter.x + (fieldSize.x / 2) - 1f;
-            float minZ = fieldCenter.z - (fieldSize.z / 2) + 1f;
-            float maxZ = fieldCenter.z + (fieldSize.z / 2) - 1f;
-            float ballHeight = fieldCollider.bounds.max.y + 0.15f;
+            float marginX = fieldBounds.size.x * 0.15f;
+            float marginZ = fieldBounds.size.z * 0.15f;
 
-            Vector3 spawnPosition = new Vector3(
-                Random.Range(minX, maxX),
-                ballHeight,
-                Random.Range(minZ, maxZ)
-            );
+            float randomX = Random.Range(fieldBounds.min.x + marginX, fieldBounds.max.x - marginX);
+            float randomZ = Random.Range(fieldBounds.min.z + marginZ, fieldBounds.max.z - marginZ);
+
+            float gameBoardY = GameManager.Instance.rootContainer.position.y;
+
+            float ballHeight = Mathf.Max(fieldBounds.max.y, gameBoardY) + 0.1f;
+
+            Vector3 spawnPosition = new Vector3(randomX, ballHeight, randomZ);
 
             ballInstance = Instantiate(ballPrefab, spawnPosition, Quaternion.identity);
             ballInstance.tag = "Ball";
+
+            ballInstance.transform.SetParent(GameManager.Instance.rootContainer, true);
         }
+
+
 
         public void EndMatch(string resultType)
         {

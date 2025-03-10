@@ -27,7 +27,7 @@ namespace BallBattleAR
             }
         }
 
-        void SpawnSoldier(Vector3 spawnPosition, GameObject clickedField)
+        void SpawnSoldier(Vector3 clickPosition, GameObject clickedField)
         {
             bool isPlayerAttacking = GameManager.Instance.IsPlayerAttacking();
             bool isPlayerSide = clickedField == playerField;
@@ -52,18 +52,30 @@ namespace BallBattleAR
 
             if (energySystem.CanSpawn(isPlayerSpawning, energyCost))
             {
-                float fieldHeight = clickedField.GetComponent<Collider>().bounds.max.y;
-                spawnPosition.y = fieldHeight + 0.1f;
-
-                if(isEnemySide)
+                Collider fieldCollider = clickedField.GetComponent<Collider>();
+                if (fieldCollider == null)
                 {
-                    Instantiate(soldierPrefab, spawnPosition, Quaternion.identity);
-                } else
-                {
-                    Instantiate(soldierPrefab, spawnPosition, Quaternion.Euler(0,-180,0));
+                    Debug.LogError("Field collider is missing!");
+                    return;
                 }
 
-                
+                float gameBoardY = GameManager.Instance.rootContainer.position.y;
+
+                Vector3 spawnPosition = fieldCollider.ClosestPoint(clickPosition);
+                spawnPosition.y = Mathf.Max(fieldCollider.bounds.max.y, gameBoardY) + 0.1f;
+
+                GameObject g;
+                if (isEnemySide)
+                {
+                    g = Instantiate(soldierPrefab, spawnPosition, Quaternion.identity);
+                }
+                else
+                {
+                    g = Instantiate(soldierPrefab, spawnPosition, Quaternion.Euler(0, -180, 0));
+                }
+
+                g.transform.SetParent(GameManager.Instance.rootContainer, true);
+
                 energySystem.SpendEnergy(isPlayerSpawning, energyCost);
             }
             else
@@ -71,5 +83,6 @@ namespace BallBattleAR
                 Debug.Log("Not enough energy to spawn!");
             }
         }
+
     }
 }

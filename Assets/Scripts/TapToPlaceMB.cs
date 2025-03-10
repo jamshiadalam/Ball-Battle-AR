@@ -25,12 +25,6 @@ namespace BallBattleAR
         public Image menuButton;
         public GameObject menuPanel;
 
-        private Vector3 defaultARScale = Vector3.one;
-        private Vector3 defaultBallScale = new Vector3(0.14148f, 0.14148f, 0.14148f);
-        private Vector3 defaultMazeBallScale = new Vector3(0.1f, 0.1f, 0.1f);
-        private Vector3 defaultAttackerScale = new Vector3(0.28386f, 0.28386f, 0.28386f);
-        private Vector3 defaultDefenderScale = new Vector3(0.28386f, 0.28386f, 0.28386f);
-
         static List<ARRaycastHit> hits = new List<ARRaycastHit>();
 
 
@@ -45,7 +39,6 @@ namespace BallBattleAR
         {
             arRaycastManager = GetComponent<ARRaycastManager>();
             arPlaneManager = GetComponent<ARPlaneManager>();
-            defaultARScale = objectToPlace.transform.localScale;
         }
 
         private bool isTouchOverUI = false;
@@ -107,8 +100,6 @@ namespace BallBattleAR
                         newScale = Vector3.Min(newScale, new Vector3(1f, 1f, 1f));
 
                         spawnedObject.transform.localScale = newScale;
-
-                        ScaleRelatedObjects(newScale.x);
                     }
                 }
             }
@@ -171,35 +162,7 @@ namespace BallBattleAR
             return false;
         }
 
-        void ScaleRelatedObjects(float newScaleFactor)
-        {
-            float scaleRatio = newScaleFactor / defaultARScale.x;
-
-            GameObject ball = GameObject.FindGameObjectWithTag("Ball");
-            GameObject mazeBall = GameObject.FindGameObjectWithTag("MazeBall");
-            GameObject[] attackers = GameObject.FindGameObjectsWithTag("Attacker");
-            GameObject[] defenders = GameObject.FindGameObjectsWithTag("Defender");
-
-            if (ball != null)
-            {
-                ball.transform.localScale = defaultBallScale * scaleRatio;
-            }
-
-            if (mazeBall != null)
-            {
-                mazeBall.transform.localScale = defaultMazeBallScale * scaleRatio;
-            }
-
-            foreach (GameObject attacker in attackers)
-            {
-                attacker.transform.localScale = defaultAttackerScale * scaleRatio;
-            }
-
-            foreach (GameObject defender in defenders)
-            {
-                defender.transform.localScale = defaultDefenderScale * scaleRatio;
-            }
-        }
+        
 
         public void Move()
         {

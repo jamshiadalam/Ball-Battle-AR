@@ -23,6 +23,7 @@ namespace BallBattleAR
         private bool timerRunning = false;
         private bool ballReachedGoal = false;
         public TMP_Text timer;
+        public TMP_Text Inst;
 
         void Start()
         {
@@ -44,6 +45,8 @@ namespace BallBattleAR
             GenerateMaze();
             SpawnBallAtPlayerGate();
             StartMazeTimer();
+
+            Inst.text = "Drag the ball through Maze to Enemy Gate to Win!";
         }
 
         void Update()
@@ -167,8 +170,31 @@ namespace BallBattleAR
 
         public void SpawnBallAtPlayerGate()
         {
-            Vector3 spawnPos = GetPlayerGatePosition();
-            Instantiate(ballPrefab, spawnPos, Quaternion.identity);
+            if (ballPrefab == null || GameManager.Instance.playerField == null)
+            {
+                Debug.LogError("Maze Ball prefab or PlayerField is not assigned in GameManager!");
+                return;
+            }
+
+            Collider playerFieldCollider = GameManager.Instance.playerField.GetComponent<Collider>();
+            if (playerFieldCollider == null)
+            {
+                Debug.LogError("PlayerField collider is missing!");
+                return;
+            }
+
+            float gameBoardY = GameManager.Instance.rootContainer.position.y;
+
+            Vector3 spawnPosition = GetPlayerGatePosition();
+
+            spawnPosition.y = Mathf.Max(playerFieldCollider.bounds.max.y, gameBoardY) + 0.1f;
+
+            GameObject g = Instantiate(ballPrefab, spawnPosition, Quaternion.identity);
+
+            g.transform.SetParent(GameManager.Instance.rootContainer, true);
         }
+
+
+
     }
 }
