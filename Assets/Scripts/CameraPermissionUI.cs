@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.iOS;
 using System.Collections;
 using UnityEngine.SceneManagement;
 
